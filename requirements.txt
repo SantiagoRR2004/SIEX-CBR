@@ -1,2 +1,3 @@
 cbrkit[nlp]==0.14.2
 argparse
+black
