@@ -8,7 +8,7 @@ class Valorador(CBR):
         self,
         base_de_casos,
         num_casos_similares=100,
-        taxonomia="./datos/taxonomia.json",
+        taxonomia="./datos/jerarquia_cwe_1000.yaml",
         debug=False,
     ):
         super().__init__(base_de_casos, num_casos_similares)
@@ -18,27 +18,48 @@ class Valorador(CBR):
             self.debug = None
         self.retriever = self.inicializar_retriever(num_casos_similares, taxonomia)
 
-    def inicializar_retriever(self, num_casos_similares, taxonomia):
-        model_similarity = cbrkit.sim.attribute_value(
-            attributes={
-                "assigner": cbrkit.sim.strings.jaro()
-                # añadir aquí otros atributos
-            },
-            aggregator=cbrkit.sim.aggregator(pooling="mean"),
-        )
+    def inicializar_retriever(self, num_casos_similares, taxonomia_cwe):
+        cwe_similarity = cbrkit.sim.strings.taxonomy.load(taxonomia_cwe,
+                                                          cbrkit.sim.strings.taxonomy.wu_palmer())
+        assigner_similarity = cbrkit.sim.strings.levenshtein()
+        keywords_similarity = cbrkit.sim.collections.jaccard()
 
         # añadir aquí otros modelos de similitud
         case_similarity = cbrkit.sim.attribute_value(
             attributes={
-                "model": model_similarity,
+                "cwe": cwe_similarity,
+                "assigner": assigner_similarity,
+                "keywords": keywords_similarity,
             },
-            aggregator=cbrkit.sim.aggregator(pooling="mean"),
+            aggregator=cbrkit.sim.aggregator(pooling="mean"), #se pueden añadir pesos (pooling_wieghts)
         )
+
+        # crear un objeto de recuperación
         retriever = cbrkit.retrieval.build(case_similarity, limit=num_casos_similares)
         return retriever
 
-    def similaridad(self, caso_a, caso_b):
-        return self.retriever.similaridad(caso_a, caso_b)
+    def inicializar_caso(self, caso, id=None):
+        caso = super().inicializar_caso(caso, id)
+
+        if "score" in caso["metric"]:
+            caso["_meta"]["score_real"] = caso["metric"]["score"]
+        else:
+            caso["_meta"]["score_real"] = 0.0
+
+        caso["_meta"]["score_predicho"] = 0.0
+        caso["_meta"]["score_exito"] = False
+        caso["_meta"]["score_corregido"] = False
+
+        if "attackVector" in caso["metric"]:
+            caso["_meta"]["attack_vector_real"] = caso["metric"]["attackVector"]
+        else:
+            caso["_meta"]["attack_vector_real"] = None
+
+        caso["_meta"]["attack_vector_predicho"] = None
+        caso["_meta"]["attack_vector_exito"] = False
+        caso["_meta"]["attack_vector_corregido"] = False
+
+        return caso
 
     def recuperar(self, caso_a_resolver):
         result = cbrkit.retrieval.apply(
@@ -55,22 +76,6 @@ class Valorador(CBR):
             self.DEBUG.debug_recuperar(caso_a_resolver, casos_similares, similaridades)
 
         return (casos_similares, similaridades)
-
-    """
-    def evaluar(self, caso_a_evaluar):
-        similares, scores = self.recuperar(caso_a_evaluar)
-
-        if len(similares) == 0:
-            return None # No hay casos similares
-        
-        elif len(similares) == 1:
-            return similares[0] # Solo hay un caso similar
-        
-        else:
-            if self.similaridad_max is not None:
-                scores = [score for score in scores if score <= self.similaridad_max]
-            return similares[scores.index(max(scores))] # Retorna el caso similar con mayor similitud
-    """
 
     def reutilizar(self, caso_a_resolver, casos_similares, similaridades):
         pass
@@ -95,3 +100,9 @@ class Valorador(CBR):
 
     def prettyprint_caso(self, caso):
         return "Caso " + str(caso.id) + ": " + caso.descripcion
+    
+
+if __name__ == "__main__":
+    base_casos = cbrkit.loaders.json("./datos/base_casos.json")
+    valorador = Valorador(base_casos)
+    retriever = valorador.inicializar_retriever(100, "./datos/jerarquia_cwe_1000.yaml")
