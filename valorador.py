@@ -283,7 +283,23 @@ class Valorador(CBR):
         casos_similares=None,
         similaridades=None,
     ):
-        pass
+        es_retenido = False
+
+        # retener casos que se han corregido
+        if (
+            not caso_revisado["_meta"]["score_exito"]
+            or not caso_revisado["_meta"]["attack_vector_exito"]
+        ):
+            es_retenido = True
+        elif (
+            caso_revisado["_meta"]["exito"]
+            and caso_revisado["_meta"]["attack_vector_exito"]
+        ):
+            es_retenido = True
+
+        if es_retenido:
+            print(f"Caso {caso_revisado['_meta']['id']} retenido")
+            self.base_de_casos[len(self.base_de_casos) - 1] = caso_revisado
 
     def prettyprint_caso(self, caso):
         term = getTerminalSize()
