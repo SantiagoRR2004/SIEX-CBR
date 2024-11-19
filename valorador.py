@@ -1,4 +1,6 @@
 from core import CBR, CBR_DEBUG
+from typing import List
+from statistics import mode
 import os
 import cbrkit
 
@@ -124,8 +126,42 @@ class Valorador(CBR):
 
         return (casos_similares, similaridades)
 
-    def reutilizar(self, caso_a_resolver, casos_similares, similaridades):
-        pass
+    def reutilizar(
+        self,
+        caso_a_resolver: dict,
+        casos_similares: List[dict],
+        similaridades: List[float],
+    ) -> dict:
+        """
+        Reuse the most similar cases to the case to predict
+        the score and attack vector of the case to solve.
+
+        casos_similares and similaridades must be in order
+        and be the same length.
+
+        Args:
+            - caso_a_resolver (dict): Case to solve
+            - casos_similares (list[dict]): List of similar cases
+            - similaridades (list[float]): List of similarities between the case to solve and the similar cases
+
+        Returns:
+            - dict: Case solved with the predicted score and attack vector
+        """
+        # First we predict the score
+        weightedSum = sum(
+            d["metric"]["score"] * w for d, w in zip(casos_similares, similaridades)
+        )
+        weightTotal = sum(similaridades)
+
+        caso_a_resolver["_meta"]["score_predicho"] = (
+            weightedSum / weightTotal if weightTotal else 0
+        )
+
+        # Then we predict the attack vector
+        attackVectors = [d["metric"]["attackVector"] for d in casos_similares]
+        caso_a_resolver["_meta"]["attack_vector_predicho"] = mode(attackVectors)
+
+        return caso_a_resolver
 
     def revisar(
         self,
@@ -196,11 +232,20 @@ class Valorador(CBR):
 if __name__ == "__main__":
     base_casos = cbrkit.loaders.json("./datos/base_casos.json")
     valorador = Valorador(base_casos)
+    # retriever = valorador.inicializar_retriever(100, "./datos/jerarquia_cwe_1000.yaml")
     aResolver = cbrkit.loaders.json("./datos/casos_a_resolver.json")
 
-    print(aResolver[58])
+    caso = valorador.inicializar_caso(aResolver[58])
 
-    print(valorador.prettyprint_caso(aResolver[58]))
+    # print(aResolver[58])
 
-    closest = valorador.recuperar(aResolver[58])
-    # print(len(closest[0]))
+    # print(valorador.prettyprint_caso(aResolver[58]))
+
+    closest = valorador.recuperar(caso)
+
+    valorador.reutilizar(caso, closest[0], closest[1])
+
+    print(caso["_meta"]["score_predicho"])
+    print(caso["_meta"]["score_real"])
+    print(caso["_meta"]["attack_vector_predicho"])
+    print(caso["_meta"]["attack_vector_real"])
