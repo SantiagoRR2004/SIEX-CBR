@@ -64,12 +64,16 @@ class Valorador(CBR):
         )
         assigner_similarity = cbrkit.sim.strings.levenshtein()
         keywords_similarity = cbrkit.sim.collections.jaccard()
+        affected_products_similarity = cbrkit.sim.collections.isolated_mapping(
+            cbrkit.sim.strings.jaro()
+        )
 
         # añadir aquí otros modelos de similitud
         case_similarity = cbrkit.sim.attribute_value(
             attributes={
                 "cwe": cwe_similarity,
                 "assigner": assigner_similarity,
+                "affected_products": affected_products_similarity,
                 "keywords": keywords_similarity,
             },
             aggregator=cbrkit.sim.aggregator(
@@ -192,7 +196,6 @@ class Valorador(CBR):
 if __name__ == "__main__":
     base_casos = cbrkit.loaders.json("./datos/base_casos.json")
     valorador = Valorador(base_casos)
-    # retriever = valorador.inicializar_retriever(100, "./datos/jerarquia_cwe_1000.yaml")
     aResolver = cbrkit.loaders.json("./datos/casos_a_resolver.json")
 
     print(aResolver[58])
