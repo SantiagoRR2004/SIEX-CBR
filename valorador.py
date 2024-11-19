@@ -49,6 +49,8 @@ class Valorador(CBR):
     def __init__(
         self,
         base_de_casos,
+        *,
+        umbralScore: int = 1,
         num_casos_similares=100,
         taxonomia="./datos/jerarquia_cwe_1000.yaml",
         debug=False,
@@ -59,6 +61,7 @@ class Valorador(CBR):
         else:
             self.DEBUG = None
         self.retriever = self.inicializar_retriever(num_casos_similares, taxonomia)
+        self.umbralScore = umbralScore
 
     def inicializar_retriever(self, num_casos_similares, taxonomia_cwe):
         cwe_similarity = cbrkit.sim.strings.taxonomy.load(
@@ -108,11 +111,13 @@ class Valorador(CBR):
         caso["_meta"]["attack_vector_exito"] = False
         caso["_meta"]["attack_vector_corregido"] = False
 
+        caso["_meta"]["exito"] = False
+
         return caso
 
     def recuperar(self, caso_a_resolver):
         result = cbrkit.retrieval.apply(
-            self.base_de_casos, caso_a_resolver, self.retriever
+            self.base_de_casos, caso_a_resolver, self.retriever, processes=0
         )
         casos_similares = []
         similaridades = []
@@ -165,12 +170,111 @@ class Valorador(CBR):
 
     def revisar(
         self,
-        caso_resuelto,
-        caso_a_resolver=None,
-        casos_similares=None,
-        similaridades=None,
-    ):
-        pass
+        caso_resuelto: dict,
+        caso_a_resolver: dict = None,
+        casos_similares: List[dict] = None,
+        similaridades: List[float] = None,
+    ) -> dict:
+        """
+        Revises the case. It checks if the predicted score and attack vector.
+
+        It considers the score correct if it is within the threshold
+        and if it is in the same CVSS 3.0 range.
+        https://www.hackercoolmagazine.com/wp-content/uploads/2023/09/CVSS_vulnerability_scoring_1.jpg
+
+        If it is successful it puts the predicted score as the real score.
+        If it is not successful it puts the real score as the real score.
+
+        It considers the attack vector correct if it is the same as the predicted one.
+
+        If it is successful it puts the predicted attack vector as the real attack vector.
+        If it is not successful it puts the real attack vector as the real attack vector.
+
+        For the entire case to be succesful it needs either the score or the attack vector to be correct.
+        If neither is correct the case is not successful.
+
+        Args:
+            - caso_resuelto (dict): Case solved with the predicted score and attack vector
+            - caso_a_resolver (dict): Case to solve
+            - casos_similares (list[dict]): List of similar cases
+            - similaridades (list[float]): List of similarities between the case to solve and the similar cases
+
+        Returns:
+            - dict: Case solved with the corrected score and attack vector
+        """
+        # First we check the score
+        realScore = caso_resuelto["_meta"]["score_real"]
+        predictedScore = caso_resuelto["_meta"]["score_predicho"]
+
+        caso_resuelto["_meta"]["score_exito"] = True
+
+        # It needs to be within the threshold
+        if abs(realScore - predictedScore) > self.umbralScore:
+            caso_resuelto["_meta"]["score_exito"] = False
+
+        # It also needs to be in the same CVSS 3.0 range
+
+        # Low severity
+        if realScore >= 0.1 and realScore < 3.9:
+            if predictedScore < 0.1 or predictedScore >= 3.9:
+                caso_resuelto["_meta"]["score_exito"] = False
+
+        # Medium severity
+        elif realScore >= 4.0 and realScore < 6.9:
+            if predictedScore < 4.0 or predictedScore >= 6.9:
+                caso_resuelto["_meta"]["score_exito"] = False
+
+        # High severity
+        elif realScore >= 7.0 and realScore < 8.9:
+            if predictedScore < 7.0 or predictedScore >= 8.9:
+                caso_resuelto["_meta"]["score_exito"] = False
+
+        # Critical severity
+        elif realScore >= 9.0 and realScore <= 10.0:
+            if predictedScore < 9.0 or predictedScore > 10.0:
+                caso_resuelto["_meta"]["score_exito"] = False
+
+        # If it is successful we put the predicted score
+        if caso_resuelto["_meta"]["score_exito"]:
+            caso_resuelto["_meta"]["score_corregido"] = False
+            caso_resuelto["metric"]["score"] = caso_resuelto["_meta"]["score_predicho"]
+        # If it is not successful we put the real score
+        else:
+            caso_resuelto["_meta"]["score_corregido"] = True
+            caso_resuelto["metric"]["score"] = caso_resuelto["_meta"]["score_real"]
+
+        # Then we check the attack vector
+        if (
+            caso_resuelto["_meta"]["attack_vector_real"]
+            != caso_resuelto["_meta"]["attack_vector_predicho"]
+        ):
+            caso_resuelto["_meta"]["attack_vector_exito"] = False
+        else:
+            caso_resuelto["_meta"]["attack_vector_exito"] = True
+
+        # If it is successful we put the predicted attack vector
+        if caso_resuelto["_meta"]["attack_vector_exito"]:
+            caso_resuelto["_meta"]["attack_vector_corregido"] = False
+            caso_resuelto["metric"]["attackVector"] = caso_resuelto["_meta"][
+                "attack_vector_predicho"
+            ]
+        # If it is not successful we put the real attack vector
+        else:
+            caso_resuelto["_meta"]["attack_vector_corregido"] = True
+            caso_resuelto["metric"]["attackVector"] = caso_resuelto["_meta"][
+                "attack_vector_real"
+            ]
+
+        # Now we check the general success
+        if (
+            caso_resuelto["_meta"]["score_exito"]
+            or caso_resuelto["_meta"]["attack_vector_exito"]
+        ):
+            caso_resuelto["_meta"]["exito"] = True
+        else:
+            caso_resuelto["_meta"]["exito"] = False
+
+        return caso_resuelto
 
     def retener(
         self,
