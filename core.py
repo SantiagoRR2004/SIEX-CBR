@@ -1,4 +1,7 @@
-class CBR:
+from abc import ABC, abstractmethod
+
+
+class CBR(ABC):
     def __init__(self, base_de_casos, num_casos_similares=1):
         self.base_de_casos = base_de_casos
         self.num_casos_similares = num_casos_similares
@@ -18,12 +21,15 @@ class CBR:
 
         return caso
 
+    @abstractmethod
     def recuperar(self, caso_a_resolver):
         pass
 
+    @abstractmethod
     def reutilizar(self, caso_a_resolver, casos_similares, similaridades):
         pass
 
+    @abstractmethod
     def revisar(
         self,
         caso_resuelto,
@@ -33,6 +39,7 @@ class CBR:
     ):
         pass
 
+    @abstractmethod
     def retener(
         self,
         caso_revisado,

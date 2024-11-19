@@ -46,9 +46,9 @@
                 "isDefault": true
             },
             "presentation": {
-                "reveal": "always",
-                "focus": true,
-                "panel": "new"
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared"
             },
             "problemMatcher": [],
         }
