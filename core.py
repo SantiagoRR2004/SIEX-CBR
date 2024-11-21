@@ -1,12 +1,35 @@
 from abc import ABC, abstractmethod
+from typing import List, Tuple
 
 
 class CBR(ABC):
-    def __init__(self, base_de_casos, num_casos_similares=1):
+    def __init__(self, base_de_casos: dict, num_casos_similares: str = 1) -> None:
+        """
+        Stores the base of cases and the number of similar cases to retrieve.
+
+        Args:
+            - base_de_casos (dict): The base of cases.
+            - num_casos_similares (int): The number of similar cases to retrieve.
+
+        Returns:
+            - None
+        """
         self.base_de_casos = base_de_casos
         self.num_casos_similares = num_casos_similares
 
-    def inicializar_caso(self, caso, id=None):
+    def inicializar_caso(self, caso: dict, id: str = None) -> dict:
+        """
+        Initializes a case.
+
+        Initializes a case by adding a _meta attribute to link metadata during the CBR cycle.
+
+        Args:
+            - caso (dict): The case to initialize.
+            - id (str): The case identifier.
+
+        Returns:
+            - dict: The initialized case.
+        """
         # crear un atributo _meta para vincular metadatos durante el ciclo CBR
         caso["_meta"] = {}
 
@@ -22,38 +45,109 @@ class CBR(ABC):
         return caso
 
     @abstractmethod
-    def recuperar(self, caso_a_resolver):
+    def recuperar(self, caso_a_resolver: dict) -> Tuple[List[dict], List[float]]:
+        """
+        Retrieves similar cases from the case base.
+
+        This method should be implemented by subclasses.
+
+        Args:
+            - caso_a_resolver (dict): The case to resolve.
+
+        Returns:
+            - tuple: A tuple containing 2 lists:
+                - List[dict]: The similar cases.
+                - List[float]: The similarity scores.
+        """
         pass
 
     @abstractmethod
-    def reutilizar(self, caso_a_resolver, casos_similares, similaridades):
+    def reutilizar(
+        self,
+        caso_a_resolver: dict,
+        casos_similares: List[dict],
+        similaridades: List[float],
+    ) -> dict:
+        """
+        Reuses similar cases to resolve the current case.
+
+        This method should be implemented by subclasses.
+
+        Args:
+            - caso_a_resolver (dict): The case to resolve.
+            - casos_similares (List[dict]): The similar cases.
+            - similaridades (List[float]): The similarity scores.
+
+        Returns:
+            - dict: The resolved case.
+        """
         pass
 
     @abstractmethod
     def revisar(
         self,
-        caso_resuelto,
-        caso_a_resolver=None,
-        casos_similares=None,
-        similaridades=None,
-    ):
+        caso_resuelto: dict,
+        caso_a_resolver: dict = None,
+        casos_similares: List[dict] = None,
+        similaridades: List[float] = None,
+    ) -> dict:
+        """
+        Reviews the resolved case.
+
+        This method should be implemented by subclasses.
+
+        Args:
+            - caso_resuelto (dict): The resolved case.
+            - caso_a_resolver (dict): The case to resolve.
+            - casos_similares (List[dict]): The similar cases.
+            - similaridades (List[float]): The similarity scores.
+
+        Returns:
+            - dict: The reviewed case.
+        """
         pass
 
     @abstractmethod
     def retener(
         self,
-        caso_revisado,
-        caso_a_resolver=None,
-        casos_similares=None,
-        similaridades=None,
-    ):
+        caso_revisado: dict,
+        caso_a_resolver: dict = None,
+        casos_similares: List[dict] = None,
+        similaridades: List[float] = None,
+    ) -> None:
+        """
+        Retains the reviewed case if deemed necessary.
+
+        This method should be implemented by subclasses.
+
+        Args:
+            - caso_revisado (dict): The reviewed case.
+            - caso_a_resolver (dict): The case to resolve.
+            - casos_similares (List[dict]): The similar cases.
+            - similaridades (List[float]): The similarity scores.
+
+        Returns:
+            - None
+        """
         pass
 
-    def ciclo_cbr(self, caso_a_resolver, id_caso=None):
+    def ciclo_cbr(self, caso_a_resolver: dict, id_caso: str = None) -> dict:
+        """
+        Executes a CBR cycle to resolve a case.
+
+        First, initializes the case to resolve. Then, retrieves similar cases from the case base.
+        Next, reuses the similar cases to resolve the current case. After that, reviews the resolved
+        case. Finally, retains the reviewed case if deemed necessary.
+
+        Args:
+            - caso_a_resolver (dict): The case to resolve.
+            - id_caso (str): The case identifier.
+
+        Returns:
+            - dict: The finished case.
+        """
         caso_a_resolver = self.inicializar_caso(caso_a_resolver, id=id_caso)
-        (casos_similares, similaridades) = self.recuperar(
-            caso_a_resolver
-        )  # , base_de_casos, similaridad)
+        (casos_similares, similaridades) = self.recuperar(caso_a_resolver)
         caso_resuelto = self.reutilizar(caso_a_resolver, casos_similares, similaridades)
         caso_revisado = self.revisar(
             caso_resuelto, caso_a_resolver, casos_similares, similaridades
