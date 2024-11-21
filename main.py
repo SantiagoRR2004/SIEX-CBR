@@ -51,9 +51,11 @@ if __name__ == "__main__":
         if caso_resuelto["_meta"]["exito"]:
             contador_exitos += 1
         print("--- CASO RESUELTO ---")
-        print(f"Score predicho: {caso["_meta"]["score_predicho"]}")
+        print(f"Score predicho: {caso_resuelto['_meta']['score_predicho']}")
         print(f"Score real: {caso_resuelto['_meta']['score_real']}")
-        print(f"Attack vector predicho: {caso['_meta']['attack_vector_predicho']}")
+        print(
+            f"Attack vector predicho: {caso_resuelto['_meta']['attack_vector_predicho']}"
+        )
         print(f"Attack vector real: {caso_resuelto['_meta']['attack_vector_real']}")
         print("---------------------")
         realAV.append(caso_resuelto["_meta"]["attack_vector_real"])
