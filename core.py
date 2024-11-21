@@ -157,13 +157,52 @@ class CBR(ABC):
 
 
 class CBR_DEBUG:
-    def __init__(self, prettyprint_caso):
+    def __init__(self, prettyprint_caso: callable) -> None:
+        """
+        Stores the prettyprint function. It needs to
+        format a case (dict) into a human-readable string.
+
+        Args:
+            - prettyprint_caso (callable): The prettyprint function.
+
+        Returns:
+            - None
+        """
         self.prettyprint_caso = prettyprint_caso
 
-    def debug_mensaje(self, etiqueta, mensaje=""):
+    def debug_mensaje(self, etiqueta: str, mensaje: str = "") -> None:
+        """
+        Prints a debug message. The etiqueta is shown between brackets
+        before the message.
+
+        Args:
+            - etiqueta (str): The debug message label.
+            - mensaje (str): The debug message.
+
+        Returns:
+            - None
+        """
         print("[{}] {}".format(etiqueta, mensaje))
 
-    def debug_recuperar(self, caso, similares, scores):
+    def debug_recuperar(
+        self, caso: dict, similares: List[dict], scores: List[float]
+    ) -> None:
+        """
+        Prints debug information about the retrieval step.
+
+        First, it prints the case to resolve. Then, it prints the value
+        of the best similarity score and then it prints the similar cases.
+
+        similares and scores need to be the same length.
+
+        Args:
+            - caso (dict): The case to resolve.
+            - similares (List[dict]): The similar cases.
+            - scores (List[float]): The similarity scores.
+
+        Returns:
+            - None
+        """
         self.debug_mensaje(
             "DEBUG.recuperar", mensaje="CASO A RESOLVER: " + self.prettyprint_caso(caso)
         )
@@ -185,14 +224,36 @@ class CBR_DEBUG:
             count = count + 1
         self.debug_mensaje("DEBUG.recuperar")
 
-    def debug_reutilizar(self, caso_resuelto):
+    def debug_reutilizar(self, caso_resuelto: dict) -> None:
+        """
+        Prints the information about the solved case.
+
+        Args:
+            - caso_resuelto (dict): The solved case.
+
+        Returns:
+            - None
+        """
         self.debug_mensaje(
             "DEBUG.reutilizar",
             mensaje="CASO RESUELTO: " + self.prettyprint_caso(caso_resuelto),
         )
         self.debug_mensaje("DEBUG.retutilzar")
 
-    def debug_revisar(self, caso_revisado, es_exito=None, es_corregido=None):
+    def debug_revisar(
+        self, caso_revisado: dict, es_exito: bool = None, es_corregido: bool = None
+    ) -> None:
+        """
+        Prints the information about the reviewed case.
+
+        Args:
+            - caso_revisado (dict): The reviewed case.
+            - es_exito (bool): The success flag.
+            - es_corregido (bool): The corrected flag.
+
+        Returns:
+            - None
+        """
         self.debug_mensaje(
             "DEBUG.revisar",
             mensaje="CASO REVISADO: " + self.prettyprint_caso(caso_revisado),
@@ -205,7 +266,17 @@ class CBR_DEBUG:
             )
         self.debug_mensaje("DEBUG.revisar")
 
-    def debug_retener(self, caso_retenido, es_retenido=None):
+    def debug_retener(self, caso_retenido: dict, es_retenido: bool = None) -> None:
+        """
+        Prints the information about the retained case.
+
+        Args:
+            - caso_retenido (dict): The retained case.
+            - es_retenido (bool): The retention flag.
+
+        Returns:
+            - None
+        """
         self.debug_mensaje(
             "DEBUG.retener",
             mensaje="CASO RETENIDO: " + self.prettyprint_caso(caso_retenido),
