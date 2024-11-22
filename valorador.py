@@ -378,14 +378,13 @@ class Valorador(CBR):
 
         # retener casos que se han corregido
         if (
-            not caso_revisado["_meta"]["score_exito"]
-            or not caso_revisado["_meta"]["attack_vector_exito"]
+            caso_revisado["_meta"]["score_corregido"]
+            or caso_revisado["_meta"]["attack_vector_corregido"]
         ):
             es_retenido = True
-        elif (
-            caso_revisado["_meta"]["exito"]
-            and caso_revisado["_meta"]["attack_vector_exito"]
-        ):
+
+        # retener casos que el attack vector ha sido exitoso
+        elif caso_revisado["_meta"]["attack_vector_exito"]:
             es_retenido = True
 
         if es_retenido:
@@ -434,7 +433,7 @@ class Valorador(CBR):
             toret += centerText(caso["affected_products"][0])
         toret += centerText("")
 
-        toret += "*" * term[0] + "\n" + "*" * term[0] + "\n"
+        toret += "*" * term[0] + "\n" + "*" * term[0]
         return toret
 
     def prettyprintAffected(self, affected: list) -> str:
@@ -459,19 +458,12 @@ class Valorador(CBR):
 
 if __name__ == "__main__":
     base_casos = cbrkit.loaders.json("./datos/base_casos.json")
-    valorador = Valorador(base_casos)
-    # retriever = valorador.inicializar_retriever(100, "./datos/jerarquia_cwe_1000.yaml")
+    valorador = Valorador(base_casos, debug=True, num_casos_similares=2)
     aResolver = cbrkit.loaders.json("./datos/casos_a_resolver.json")
 
-    caso = valorador.inicializar_caso(aResolver[58])
+    caso = aResolver[58]
 
-    # print(aResolver[58])
-
-    # print(valorador.prettyprint_caso(aResolver[58]))
-
-    closest = valorador.recuperar(caso)
-
-    valorador.reutilizar(caso, closest[0], closest[1])
+    valorador.ciclo_cbr(caso)
 
     print(caso["_meta"]["score_predicho"])
     print(caso["_meta"]["score_real"])
