@@ -8,6 +8,16 @@ import random
 from valorador import Valorador
 
 
+def extraer_casos_a_resolver(base_de_casos, cantidad):
+    casos_a_resolver = []
+    indices_aleatorios = random.sample(list(base_de_casos.keys()), cantidad)
+
+    for i in indices_aleatorios:
+        caso = base_de_casos.pop(i)
+        casos_a_resolver.append(caso)
+    return casos_a_resolver
+
+
 def showConfusionMatrix(trueLabels: List[str], predictedLabels: List[str]) -> None:
     """
     Display a confusion matrix for the true and predicted labels.
@@ -41,12 +51,13 @@ if __name__ == "__main__":
     base_casos = cbrkit.loaders.json("./datos/base_casos.json")
     valorador = Valorador(base_casos)
     casos_a_resolver = cbrkit.loaders.json("./datos/casos_a_resolver.json")
+    casos_a_resolver = extraer_casos_a_resolver(casos_a_resolver, 10)
 
     contador_exitos = 0
     realAV = []
     predictedAV = []
 
-    for caso in casos_a_resolver.values():
+    for caso in casos_a_resolver:
         caso_resuelto = valorador.ciclo_cbr(caso)
         if caso_resuelto["_meta"]["exito"]:
             contador_exitos += 1
