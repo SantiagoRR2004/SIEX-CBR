@@ -10,7 +10,7 @@ from valorador import Valorador
 
 def extraer_casos_a_resolver(base_de_casos, cantidad):
     casos_a_resolver = []
-    indices_aleatorios = random.sample(list(base_de_casos.keys()), cantidad)
+    indices_aleatorios = sorted(random.sample(list(base_de_casos.keys()), cantidad))
 
     for i in indices_aleatorios:
         caso = base_de_casos.pop(i)
@@ -51,8 +51,9 @@ if __name__ == "__main__":
     base_casos = cbrkit.loaders.json("./datos/base_casos.json")
     valorador = Valorador(base_casos)
     casos_a_resolver = cbrkit.loaders.json("./datos/casos_a_resolver.json")
-    casos_a_resolver = extraer_casos_a_resolver(casos_a_resolver, 10)
+    casos_a_resolver = extraer_casos_a_resolver(casos_a_resolver, 100)
 
+    sum_fallo_scores = 0
     contador_exitos = 0
     realAV = []
     predictedAV = []
@@ -69,9 +70,16 @@ if __name__ == "__main__":
         )
         print(f"Attack vector real: {caso_resuelto['_meta']['attack_vector_real']}")
         print("---------------------")
+        sum_fallo_scores += abs(
+            caso_resuelto["_meta"]["score_real"]
+            - caso_resuelto["_meta"]["score_predicho"]
+        )
         realAV.append(caso_resuelto["_meta"]["attack_vector_real"])
         predictedAV.append(caso["_meta"]["attack_vector_predicho"])
 
     print(f"Número de casos exitosos: {contador_exitos} de {len(casos_a_resolver)}")
+    print(
+        f"Media de desviación de la score predicha: {sum_fallo_scores / len(casos_a_resolver)}"
+    )
 
     showConfusionMatrix(realAV, predictedAV)
