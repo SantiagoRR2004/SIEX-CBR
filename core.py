@@ -204,7 +204,8 @@ class CBR_DEBUG:
             - None
         """
         self.debug_mensaje(
-            "DEBUG.recuperar", mensaje="CASO A RESOLVER: " + self.prettyprint_caso(caso)
+            "DEBUG.recuperar",
+            mensaje="CASO A RESOLVER:\n" + self.prettyprint_caso(caso),
         )
         self.debug_mensaje(
             "DEBUG.recuperar",
@@ -217,8 +218,8 @@ class CBR_DEBUG:
         for c, score in zip(similares, scores):
             self.debug_mensaje(
                 "DEBUG.recuperar",
-                mensaje="- [{}] {}  (Similaridad: {})".format(
-                    count, self.prettyprint_caso(c), score
+                mensaje="- [{}] (Similaridad: {})\n{}".format(
+                    count, score, self.prettyprint_caso(c)
                 ),
             )
             count = count + 1
@@ -236,9 +237,9 @@ class CBR_DEBUG:
         """
         self.debug_mensaje(
             "DEBUG.reutilizar",
-            mensaje="CASO RESUELTO: " + self.prettyprint_caso(caso_resuelto),
+            mensaje="CASO RESUELTO:\n" + self.prettyprint_caso(caso_resuelto),
         )
-        self.debug_mensaje("DEBUG.retutilzar")
+        self.debug_mensaje("DEBUG.reutilizar")
 
     def debug_revisar(
         self, caso_revisado: dict, es_exito: bool = None, es_corregido: bool = None
@@ -256,7 +257,7 @@ class CBR_DEBUG:
         """
         self.debug_mensaje(
             "DEBUG.revisar",
-            mensaje="CASO REVISADO: " + self.prettyprint_caso(caso_revisado),
+            mensaje="CASO REVISADO:\n" + self.prettyprint_caso(caso_revisado),
         )
         if es_exito is not None:
             self.debug_mensaje("DEBUG.revisar", mensaje="- exito: {}".format(es_exito))
@@ -279,7 +280,7 @@ class CBR_DEBUG:
         """
         self.debug_mensaje(
             "DEBUG.retener",
-            mensaje="CASO RETENIDO: " + self.prettyprint_caso(caso_retenido),
+            mensaje="CASO RETENIDO:\n" + self.prettyprint_caso(caso_retenido),
         )
         if es_retenido is not None:
             if es_retenido and ("id" in caso_retenido):
