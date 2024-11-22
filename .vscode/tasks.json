@@ -38,7 +38,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Format Code",
+            "label": "Format Code with Black",
             "type": "shell",
             "command": "black .",
             "group": {
