@@ -1,14 +1,17 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 
 class CBR(ABC):
-    def __init__(self, base_de_casos: dict, num_casos_similares: str = 1) -> None:
+    def __init__(
+        self, base_de_casos: Dict[int, dict], num_casos_similares: str = 1
+    ) -> None:
         """
         Stores the base of cases and the number of similar cases to retrieve.
 
         Args:
-            - base_de_casos (dict): The base of cases.
+            - base_de_casos (Dict[int, dict]): The case base. The keys are the case identifiers and
+                the values are the cases themselves.
             - num_casos_similares (int): The number of similar cases to retrieve.
 
         Returns:

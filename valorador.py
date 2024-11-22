@@ -1,5 +1,5 @@
 from core import CBR, CBR_DEBUG
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from statistics import mode
 import os
 import cbrkit
@@ -48,7 +48,7 @@ def centerText(text: str, *, fillchar: str = "*", nFill: int = 2) -> str:
 class Valorador(CBR):
     def __init__(
         self,
-        base_de_casos: List[dict],
+        base_de_casos: Dict[int, dict],
         *,
         umbralScore: int = 1,
         num_casos_similares: int = 100,
@@ -59,7 +59,8 @@ class Valorador(CBR):
         Initializes the Valorador object.
 
         Args:
-            - base_de_casos (List[dict]): List of cases to use as the base
+            - base_de_casos (Dict[int, dict]): The case base. The keys are the case identifiers and
+                the values are the cases themselves.
             - umbralScore (int): Threshold to consider the score correct
             - num_casos_similares (int): Number of similar cases to retrieve
             - taxonomia (str): Path to the CWE taxonomy file
