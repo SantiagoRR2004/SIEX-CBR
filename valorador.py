@@ -253,6 +253,9 @@ class Valorador(CBR):
         For the entire case to be succesful it needs either the score or the attack vector to be correct.
         If neither is correct the case is not successful.
 
+
+        caso_a_resolver, casos_similares and similaridades are not used in this function.
+
         Args:
             - caso_resuelto (dict): Case solved with the predicted score and attack vector
             - caso_a_resolver (dict): Case to solve
@@ -346,6 +349,8 @@ class Valorador(CBR):
         """
         Retains the case if it has been corrected
         or if the attack vector has been successful.
+
+        caso_a_resolver, casos_similares and similaridades are not used in this function.
 
         Args:
             - caso_revisado (dict): The reviewed case.
