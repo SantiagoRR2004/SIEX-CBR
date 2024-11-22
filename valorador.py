@@ -1,5 +1,5 @@
 from core import CBR, CBR_DEBUG
-from typing import List
+from typing import List, Tuple
 from statistics import mode
 import os
 import cbrkit
@@ -48,13 +48,26 @@ def centerText(text: str, *, fillchar: str = "*", nFill: int = 2) -> str:
 class Valorador(CBR):
     def __init__(
         self,
-        base_de_casos,
+        base_de_casos: List[dict],
         *,
         umbralScore: int = 1,
-        num_casos_similares=100,
-        taxonomia="./datos/jerarquia_cwe_1000.yaml",
-        debug=False,
-    ):
+        num_casos_similares: int = 100,
+        taxonomia: str = "./datos/jerarquia_cwe_1000.yaml",
+        debug: bool = False,
+    ) -> None:
+        """
+        Initializes the Valorador object.
+
+        Args:
+            - base_de_casos (List[dict]): List of cases to use as the base
+            - umbralScore (int): Threshold to consider the score correct
+            - num_casos_similares (int): Number of similar cases to retrieve
+            - taxonomia (str): Path to the CWE taxonomy file
+            - debug (bool): Flag to enable debugging
+
+        Returns:
+            - None
+        """
         super().__init__(base_de_casos, num_casos_similares)
         if debug:
             self.DEBUG = CBR_DEBUG(self.prettyprint_caso)
@@ -63,7 +76,21 @@ class Valorador(CBR):
         self.retriever = self.inicializar_retriever(num_casos_similares, taxonomia)
         self.umbralScore = umbralScore
 
-    def inicializar_retriever(self, num_casos_similares, taxonomia_cwe):
+    def inicializar_retriever(
+        self, num_casos_similares: int, taxonomia_cwe: str
+    ) -> cbrkit.retrieval.RetrieverFunc:
+        """
+        Initializes the retriever function to retrieve similar cases.
+
+        **Explain each type of similarity**
+
+        Args:
+            - num_casos_similares (int): Number of similar cases to retrieve
+            - taxonomia_cwe (str): Path to the CWE taxonomy file
+
+        Returns:
+            - cbrkit.retrieval.RetrieverFunc: Retriever function to retrieve similar cases
+        """
         cwe_similarity = cbrkit.sim.strings.taxonomy.load(
             taxonomia_cwe, cbrkit.sim.strings.taxonomy.wu_palmer()
         )
@@ -83,14 +110,36 @@ class Valorador(CBR):
             },
             aggregator=cbrkit.sim.aggregator(
                 pooling="mean"
-            ),  # se pueden añadir pesos (pooling_wieghts)
+            ),  # se pueden añadir pesos (pooling_weights)
         )
 
         # crear un objeto de recuperación
         retriever = cbrkit.retrieval.build(case_similarity, limit=num_casos_similares)
         return retriever
 
-    def inicializar_caso(self, caso, id=None):
+    def inicializar_caso(self, caso: dict, id: str = None) -> dict:
+        """
+        Initializes a case.
+
+        Initializes a case by adding a _meta attribute to link metadata during the CBR cycle.
+        It adds the following attributes to the _meta attribute:
+            - score_real: Real score of the case
+            - score_predicho: Predicted score of the case
+            - score_exito: Flag to indicate if the predicted score is correct
+            - score_corregido: Flag to indicate if the predicted score is used
+            - attack_vector_real: Real attack vector of the case
+            - attack_vector_predicho: Predicted attack vector of the case
+            - attack_vector_exito: Flag to indicate if the predicted attack vector is correct
+            - attack_vector_corregido: Flag to indicate if the predicted attack vector is used
+            - exito: Flag to indicate if the case is successful
+
+        Args:
+            - caso (dict): The case to initialize.
+            - id (str): The case identifier.
+
+        Returns:
+            - dict: The initialized case.
+        """
         caso = super().inicializar_caso(caso, id)
 
         if "score" in caso["metric"]:
@@ -115,7 +164,18 @@ class Valorador(CBR):
 
         return caso
 
-    def recuperar(self, caso_a_resolver):
+    def recuperar(self, caso_a_resolver: dict) -> Tuple[List[dict], List[float]]:
+        """
+        Retrieves similar cases from the case base.
+
+        Args:
+            - caso_a_resolver (dict): Case to solve
+
+        Returns:
+            - tuple: A tuple containing 2 lists:
+                - List[dict]: The similar cases.
+                - List[float]: The similarity scores.
+        """
         result = cbrkit.retrieval.apply(
             self.base_de_casos, caso_a_resolver, self.retriever, processes=0
         )
@@ -278,11 +338,24 @@ class Valorador(CBR):
 
     def retener(
         self,
-        caso_revisado,
-        caso_a_resolver=None,
-        casos_similares=None,
-        similaridades=None,
-    ):
+        caso_revisado: dict,
+        caso_a_resolver: dict = None,
+        casos_similares: List[dict] = None,
+        similaridades: List[float] = None,
+    ) -> None:
+        """
+        Retains the case if it has been corrected
+        or if the attack vector has been successful.
+
+        Args:
+            - caso_revisado (dict): The reviewed case.
+            - caso_a_resolver (dict): The case to resolve.
+            - casos_similares (List[dict]): The similar cases.
+            - similaridades (List[float]): The similarity scores.
+
+        Returns:
+            - None
+        """
         es_retenido = False
 
         # retener casos que se han corregido
@@ -301,7 +374,21 @@ class Valorador(CBR):
             print(f"Caso {caso_revisado['_meta']['id']} retenido")
             self.base_de_casos[len(self.base_de_casos) - 1] = caso_revisado
 
-    def prettyprint_caso(self, caso):
+    def prettyprint_caso(self, caso: dict) -> str:
+        """
+        Generates the string to pretty print a case.
+        It requires the case to have the following attributes:
+            - id
+            - title
+            - assigner
+            - affected_products
+
+        Args:
+            - caso (dict): Case to pretty print
+
+        Returns:
+            - str: Pretty printed case
+        """
         term = getTerminalSize()
         toret = "*" * term[0] + "\n"
         toret += " Vulnerability Report ".center(term[0], "*") + "\n"
