@@ -226,6 +226,10 @@ class Valorador(CBR):
         attackVectors = [d["metric"]["attackVector"] for d in casos_similares]
         caso_a_resolver["_meta"]["attack_vector_predicho"] = mode(attackVectors)
 
+        # DEBUG
+        if self.DEBUG:
+            self.DEBUG.debug_reutilizar(caso_a_resolver)
+
         return caso_a_resolver
 
     def revisar(
@@ -337,6 +341,15 @@ class Valorador(CBR):
         else:
             caso_resuelto["_meta"]["exito"] = False
 
+        # DEBUG
+        if self.DEBUG:
+            self.DEBUG.debug_revisar(
+                caso_resuelto,
+                caso_resuelto["_meta"]["exito"],
+                caso_resuelto["_meta"]["attack_vector_corregido"]
+                or caso_resuelto["_meta"]["score_corregido"],
+            )
+
         return caso_resuelto
 
     def retener(
@@ -376,8 +389,11 @@ class Valorador(CBR):
             es_retenido = True
 
         if es_retenido:
-            print(f"Caso {caso_revisado['_meta']['id']} retenido")
             self.base_de_casos[len(self.base_de_casos) - 1] = caso_revisado
+
+        # DEBUG
+        if self.DEBUG:
+            self.DEBUG.debug_retener(caso_revisado, es_retenido)
 
     def prettyprint_caso(self, caso: dict) -> str:
         """
