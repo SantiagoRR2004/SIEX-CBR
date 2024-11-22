@@ -177,8 +177,10 @@ class Valorador(CBR):
                 - List[dict]: The similar cases.
                 - List[float]: The similarity scores.
         """
+        # Need to comment the processes argument to avoid a bug
+        # https://stackoverflow.com/questions/74710303/how-can-i-get-rid-of-the-vs-code-warning-of-seriverx-disconnected-unexpectedl
         result = cbrkit.retrieval.apply(
-            self.base_de_casos, caso_a_resolver, self.retriever, processes=0
+            self.base_de_casos, caso_a_resolver, self.retriever  # , processes=0
         )
         casos_similares = []
         similaridades = []
@@ -389,7 +391,7 @@ class Valorador(CBR):
             es_retenido = True
 
         if es_retenido:
-            self.base_de_casos[len(self.base_de_casos) - 1] = caso_revisado
+            self.base_de_casos[len(self.base_de_casos)] = caso_revisado
 
         # DEBUG
         if self.DEBUG:
