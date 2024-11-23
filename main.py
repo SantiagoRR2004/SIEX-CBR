@@ -10,6 +10,16 @@ from valorador import Valorador
 
 
 def extraer_casos_a_resolver(base_de_casos, cantidad):
+    """
+    Extracts a random sample of cases from the base of cases.
+
+    Args:
+        - base_de_casos (dict): The base of cases.
+        - cantidad (int): The number of cases to extract.
+
+    Returns:
+        - list: A list of cases.
+    """
     casos_a_resolver = []
     indices_aleatorios = sorted(random.sample(list(base_de_casos.keys()), cantidad))
 
