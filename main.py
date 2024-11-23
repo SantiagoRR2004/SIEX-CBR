@@ -25,7 +25,7 @@ def showConfusionMatrix(trueLabels: List[str], predictedLabels: List[str]) -> No
 
     The labels are assumed to be one of the following:
         - NETWORK
-        - ADJACENT NETWORK
+        - ADJACENT_NETWORK
         - LOCAL
 
     Args:
@@ -37,12 +37,12 @@ def showConfusionMatrix(trueLabels: List[str], predictedLabels: List[str]) -> No
     """
     # Compute confusion matrix
     cm = confusion_matrix(
-        trueLabels, predictedLabels, labels=["NETWORK", "ADJACENT NETWORK", "LOCAL"]
+        trueLabels, predictedLabels, labels=["NETWORK", "ADJACENT_NETWORK", "LOCAL"]
     )
 
     # Display confusion matrix
     disp = ConfusionMatrixDisplay(
-        confusion_matrix=cm, display_labels=["NETWORK", "ADJACENT NETWORK", "LOCAL"]
+        confusion_matrix=cm, display_labels=["NETWORK", "ADJACENT_NETWORK", "LOCAL"]
     )
     disp.plot(cmap="Blues")
 
