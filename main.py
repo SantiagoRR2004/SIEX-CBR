@@ -94,6 +94,10 @@ def plot_predictions(correct: List[float], predicted: List[float]) -> None:
     # Create a diagonal line
     diagonal = np.linspace(min_val, max_val, 500)
 
+    # Calculate the slope and intercept for the line of best fit
+    slope, intercept = np.polyfit(correct, predicted, 1)
+    regression_line = slope * diagonal + intercept
+
     # Plotting
     plt.figure(figsize=(8, 8))
 
@@ -115,13 +119,22 @@ def plot_predictions(correct: List[float], predicted: List[float]) -> None:
     plt.axvspan(0, 4, color="green")
     plt.axhspan(0, 4, color="green")
 
+    # Diagonal line
     plt.plot(
         diagonal, diagonal, color="black", linestyle="--", label="Perfect Prediction"
-    )  # Diagonal line
+    )
 
-    plt.scatter(
-        correct, predicted, color="blue", alpha=0.6, label="Predictions"
-    )  # Points
+    # Line of best fit
+    plt.plot(
+        diagonal,
+        regression_line,
+        color="black",
+        linestyle="-",
+        label="Regression Line",
+    )
+
+    # Points
+    plt.scatter(correct, predicted, color="blue", alpha=0.6, label="Predictions")
 
     plt.xlabel("Correct Values", fontsize=12)
     plt.ylabel("Predicted Values", fontsize=12)
