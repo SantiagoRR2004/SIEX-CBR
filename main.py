@@ -1,7 +1,7 @@
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import List
+from typing import List, Dict
 import cbrkit
 import argparse
 import pprint
@@ -9,23 +9,38 @@ import random
 from valorador import Valorador
 
 
-def extraer_casos_a_resolver(base_de_casos, cantidad):
+def extraer_casos_a_resolver(
+    base_de_casos: Dict[str, dict], cantidad: int
+) -> List[dict]:
     """
     Extracts a random sample of cases from the base of cases.
 
+    To extract all cases, set cantidad to 0.
+
     Args:
-        - base_de_casos (dict): The base of cases.
+        - base_de_casos (Dict[str, dict]): The base of cases. The keys are
+            the identifiers of the cases and the values are the cases.
         - cantidad (int): The number of cases to extract.
 
     Returns:
         - list: A list of cases.
     """
-    casos_a_resolver = []
-    indices_aleatorios = sorted(random.sample(list(base_de_casos.keys()), cantidad))
+    if cantidad > len(base_de_casos):
+        raise ValueError(
+            f"La cantidad de casos a extraer ({cantidad}) no puede ser mayor que la cantidad de casos en la base de casos ({len(base_de_casos)})"
+        )
 
-    for i in indices_aleatorios:
-        caso = base_de_casos.pop(i)
-        casos_a_resolver.append(caso)
+    elif cantidad == 0:
+        casos_a_resolver = list(base_de_casos.values())
+
+    else:
+        casos_a_resolver = []
+        indices_aleatorios = sorted(random.sample(list(base_de_casos.keys()), cantidad))
+
+        for i in indices_aleatorios:
+            caso = base_de_casos.pop(i)
+            casos_a_resolver.append(caso)
+
     return casos_a_resolver
 
 
