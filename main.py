@@ -6,6 +6,10 @@ import cbrkit
 import random
 from valorador import Valorador
 from tqdm import tqdm
+import warnings
+
+# Ignorar todos los warnings específicos de spaCy
+warnings.filterwarnings("ignore", message=r"\[W007\]")
 
 
 def extraer_casos_a_resolver(
@@ -147,7 +151,7 @@ def plot_predictions(correct: List[float], predicted: List[float]) -> None:
 
 if __name__ == "__main__":
     base_casos = cbrkit.loaders.json("./datos/base_casos.json")
-    valorador = Valorador(base_casos)
+    valorador = Valorador(base_casos, multiCore=True)
     casos_a_resolver = cbrkit.loaders.json("./datos/casos_a_resolver.json")
     casos_a_resolver = extraer_casos_a_resolver(casos_a_resolver, 100)
 
