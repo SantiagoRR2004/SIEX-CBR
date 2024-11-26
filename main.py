@@ -3,10 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from typing import List, Dict
 import cbrkit
-import argparse
-import pprint
 import random
 from valorador import Valorador
+from tqdm import tqdm
 
 
 def extraer_casos_a_resolver(
@@ -159,18 +158,10 @@ if __name__ == "__main__":
     predictedAV = []
     predictedScores = []
 
-    for caso in casos_a_resolver:
+    for caso in tqdm(casos_a_resolver):
         caso_resuelto = valorador.ciclo_cbr(caso)
         if caso_resuelto["_meta"]["exito"]:
             contador_exitos += 1
-        print("--- CASO RESUELTO ---")
-        print(f"Score predicho: {caso_resuelto['_meta']['score_predicho']}")
-        print(f"Score real: {caso_resuelto['_meta']['score_real']}")
-        print(
-            f"Attack vector predicho: {caso_resuelto['_meta']['attack_vector_predicho']}"
-        )
-        print(f"Attack vector real: {caso_resuelto['_meta']['attack_vector_real']}")
-        print("---------------------")
         realAV.append(caso_resuelto["_meta"]["attack_vector_real"])
         realScores.append(caso_resuelto["_meta"]["score_real"])
         predictedAV.append(caso["_meta"]["attack_vector_predicho"])
