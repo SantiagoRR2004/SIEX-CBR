@@ -4,6 +4,7 @@ from statistics import mode
 import os
 import cbrkit
 from multiprocess import Pool
+import spacy
 
 
 def getTerminalSize() -> tuple:
@@ -96,12 +97,14 @@ class Valorador(CBR):
         Returns:
             - cbrkit.retrieval.RetrieverFunc: Retriever function to retrieve similar cases
         """
+        # Cargar modelo de spaCy
+        nlp = spacy.load("en_core_web_md")
+
         cwe_similarity = cbrkit.sim.strings.taxonomy.load(
             taxonomia_cwe, cbrkit.sim.strings.taxonomy.wu_palmer()
         )
         assigner_similarity = cbrkit.sim.strings.levenshtein()
-        keywords_similarity = cbrkit.sim.collections.jaccard()
-
+        # keywords_similarity = cbrkit.sim.collections.jaccard()
         """
         affected_products_similarity = cbrkit.sim.collections.isolated_mapping(
             cbrkit.sim.strings.jaro()
@@ -114,13 +117,30 @@ class Valorador(CBR):
             sim = cbrkit.sim.collections.isolated_mapping(cbrkit.sim.strings.jaro())
             return sim(x, y)
 
+        def description_similarity(x: str, y: str) -> float:
+            """
+            Calculate the similarity between two descriptions using spaCy.
+
+            Args:
+                - x (str): First description
+                - y(str): Second description
+
+            Returns:
+                - float: Similarity score between 0 and 1
+            """
+            doc_x = nlp(x)
+            doc_y = nlp(y)
+            similarity = doc_x.similarity(doc_y)
+            return similarity
+
         # añadir aquí otros modelos de similitud
         case_similarity = cbrkit.sim.attribute_value(
             attributes={
                 "cwe": cwe_similarity,
                 "assigner": assigner_similarity,
                 "affected_products": affected_products_similarity,
-                "keywords": keywords_similarity,
+                # "keywords": keywords_similarity,
+                "description": description_similarity,
             },
             aggregator=cbrkit.sim.aggregator(
                 pooling="mean"
