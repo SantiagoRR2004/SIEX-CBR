@@ -97,9 +97,18 @@ class Valorador(CBR):
         )
         assigner_similarity = cbrkit.sim.strings.levenshtein()
         keywords_similarity = cbrkit.sim.collections.jaccard()
+
+        """
         affected_products_similarity = cbrkit.sim.collections.isolated_mapping(
             cbrkit.sim.strings.jaro()
         )
+        """
+
+        def affected_products_similarity(x, y):
+            x = x[0].split("::")
+            y = y[0].split("::")
+            sim = cbrkit.sim.collections.isolated_mapping(cbrkit.sim.strings.jaro())
+            return sim(x, y)
 
         # añadir aquí otros modelos de similitud
         case_similarity = cbrkit.sim.attribute_value(
