@@ -3,6 +3,7 @@ from typing import List, Tuple, Dict
 from statistics import mode
 import os
 import cbrkit
+from multiprocess import Pool
 
 
 def getTerminalSize() -> tuple:
@@ -54,6 +55,7 @@ class Valorador(CBR):
         num_casos_similares: int = 100,
         taxonomia: str = "./datos/jerarquia_cwe_1000.yaml",
         debug: bool = False,
+        multiCore: bool = False,
     ) -> None:
         """
         Initializes the Valorador object.
@@ -65,6 +67,7 @@ class Valorador(CBR):
             - num_casos_similares (int): Number of similar cases to retrieve
             - taxonomia (str): Path to the CWE taxonomy file
             - debug (bool): Flag to enable debugging
+            - multiCore (bool): Flag to enable multiprocessing
 
         Returns:
             - None
@@ -76,6 +79,7 @@ class Valorador(CBR):
             self.DEBUG = None
         self.retriever = self.inicializar_retriever(num_casos_similares, taxonomia)
         self.umbralScore = umbralScore
+        self.m = multiCore
 
     def inicializar_retriever(
         self, num_casos_similares: int, taxonomia_cwe: str
@@ -178,6 +182,10 @@ class Valorador(CBR):
         """
         Retrieves similar cases from the case base.
 
+        We can't use processes argument in cbrkit.retrieval.apply() because of a bug
+        # https://stackoverflow.com/questions/74710303/how-can-i-get-rid-of-the-vs-code-warning-of-seriverx-disconnected-unexpectedl
+        It is also slower than not using it.
+
         Args:
             - caso_a_resolver (dict): Case to solve
 
@@ -186,16 +194,53 @@ class Valorador(CBR):
                 - List[dict]: The similar cases.
                 - List[float]: The similarity scores.
         """
-        # Need to comment the processes argument to avoid a bug
-        # https://stackoverflow.com/questions/74710303/how-can-i-get-rid-of-the-vs-code-warning-of-seriverx-disconnected-unexpectedl
-        result = cbrkit.retrieval.apply(
-            self.base_de_casos, caso_a_resolver, self.retriever  # , processes=0
-        )
-        casos_similares = []
-        similaridades = []
-        for i in result.ranking:
-            casos_similares.append(self.base_de_casos[i])
-            similaridades.append(result.similarities[i].value)
+        if self.m:
+            cores = os.cpu_count()
+            chunkSize = len(self.base_de_casos) // cores
+            tasks = []
+            for i in range(cores):
+                start = i * chunkSize
+                end = (i + 1) * chunkSize
+                if i == cores - 1:
+                    end = len(self.base_de_casos)
+                cases = dict(list(self.base_de_casos.items())[start:end])
+                tasks.append((cases, caso_a_resolver, self.retriever))
+
+            with Pool(cores) as p:
+                results = p.starmap(cbrkit.retrieval.apply, tasks)
+                p.close()
+                p.join()
+
+            casos_similares = []
+            similaridades = []
+
+            for result in results:
+                for i in result.ranking:
+                    casos_similares.append(self.base_de_casos[i])
+                    similaridades.append(result.similarities[i].value)
+
+            casos_similares = [
+                caso
+                for caso, _ in sorted(
+                    zip(casos_similares, similaridades),
+                    key=lambda x: x[1],
+                    reverse=True,
+                )
+            ]
+            similaridades = sorted(similaridades, reverse=True)
+
+            casos_similares = casos_similares[: self.num_casos_similares]
+            similaridades = similaridades[: self.num_casos_similares]
+
+        else:
+            result = cbrkit.retrieval.apply(
+                self.base_de_casos, caso_a_resolver, self.retriever
+            )
+            casos_similares = []
+            similaridades = []
+            for i in result.ranking:
+                casos_similares.append(self.base_de_casos[i])
+                similaridades.append(result.similarities[i].value)
 
         # DEBUG
         if self.DEBUG:
