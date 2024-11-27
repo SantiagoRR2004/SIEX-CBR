@@ -15,6 +15,7 @@ from cbrkit.typing import (
     ValueType,
 )
 from cbrkit.sim import AttributeValueSim
+import itertools
 
 
 class ClassWithValue:
@@ -329,10 +330,43 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
         return -score
 
 
+def checkValidParams(
+    paramSpace: Dict[str, list], base_de_casos: Dict[int, dict]
+) -> None:
+    """
+    Function that checks if the parameters are valid
+
+    It iterates over all possible combinations of the parameters
+
+    Args:
+        - paramSpace: Dict[str, list]. The parameters to check. They keys
+            are the names of the parameters and the values are the possible
+            values of the parameters
+        - base_de_casos: Dict[int, dict]. The dataset to use
+
+    Returns:
+        - None
+    """
+    casos_a_resolver = cbrkit.loaders.json("./datos/casos_a_resolver.json")
+
+    combinations = list(itertools.product(*paramSpace.values()))
+
+    for combination in tqdm(combinations):
+
+        try:
+            model = BayesianValorador(
+                base_de_casos=base_de_casos, **dict(zip(paramSpace.keys(), combination))
+            )
+
+            model.ciclo_cbr(casos_a_resolver[0])
+
+        except Exception as e:
+            print(f"Error with combination {dict(zip(paramSpace.keys(), combination))}")
+            raise e
+
+
 if __name__ == "__main__":
     base_casos = cbrkit.loaders.json("./datos/base_casos.json")
-
-    model = BayesianValorador(base_de_casos=base_casos)
 
     paramSpace = {
         "cweSim": [None, "wu_palmer"],
@@ -340,6 +374,10 @@ if __name__ == "__main__":
         "keywordsSim": [None, "jaccard"],
         "affectedProductsSim": [None, "jaccard", "isolated_mapping"],
     }
+
+    checkValidParams(paramSpace, base_casos)
+
+    model = BayesianValorador(base_de_casos=base_casos)
 
     # Calculate the maximum number of iterations
     maxIter = np.prod([len(paramSpace[key]) for key in paramSpace.keys()])
