@@ -3,3 +3,4 @@ argparse
 black
 matplotlib
 scikit-learn
+scikit-optimize
