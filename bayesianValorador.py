@@ -167,7 +167,19 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
         Function that initializes the CWE attribute
 
         It allows:
+            - None
             - wu_palmer
+            - path_steps
+            - user_weightsOptimistic
+            - user_weightsAverage
+            - user_weightsPessimistic
+            - node_levelsOptimistic
+            - node_levelsAverage
+            - node_levelsPessimistic
+
+        We don't use user_weights because they aren't
+        defined in the CWE taxonomy so it would be
+        the same as using auto_weights
 
         Args:
             - attributes: dict. The attributes dictionary
@@ -180,6 +192,40 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
             if self.cweSim == "wu_palmer":
                 cwe_similarity = cbrkit.sim.strings.taxonomy.load(
                     taxonomia_cwe, cbrkit.sim.strings.taxonomy.wu_palmer()
+                )
+            elif self.cweSim == "path_steps":
+                cwe_similarity = cbrkit.sim.strings.taxonomy.load(
+                    taxonomia_cwe, cbrkit.sim.strings.taxonomy.path_steps()
+                )
+            elif self.cweSim == "user_weightsOptimistic":
+                cwe_similarity = cbrkit.sim.strings.taxonomy.load(
+                    taxonomia_cwe,
+                    cbrkit.sim.strings.taxonomy.user_weights("optimistic"),
+                )
+            elif self.cweSim == "user_weightsAverage":
+                cwe_similarity = cbrkit.sim.strings.taxonomy.load(
+                    taxonomia_cwe,
+                    cbrkit.sim.strings.taxonomy.user_weights("average"),
+                )
+            elif self.cweSim == "user_weightsPessimistic":
+                cwe_similarity = cbrkit.sim.strings.taxonomy.load(
+                    taxonomia_cwe,
+                    cbrkit.sim.strings.taxonomy.user_weights("pessimistic"),
+                )
+            elif self.cweSim == "node_levelsOptimistic":
+                cwe_similarity = cbrkit.sim.strings.taxonomy.load(
+                    taxonomia_cwe,
+                    cbrkit.sim.strings.taxonomy.node_levels("optimistic"),
+                )
+            elif self.cweSim == "node_levelsAverage":
+                cwe_similarity = cbrkit.sim.strings.taxonomy.load(
+                    taxonomia_cwe,
+                    cbrkit.sim.strings.taxonomy.node_levels("average"),
+                )
+            elif self.cweSim == "node_levelsPessimistic":
+                cwe_similarity = cbrkit.sim.strings.taxonomy.load(
+                    taxonomia_cwe,
+                    cbrkit.sim.strings.taxonomy.node_levels("pessimistic"),
                 )
             else:
                 raise ValueError(f"El valor de cweSim={self.cweSim} no es válido")
@@ -369,7 +415,17 @@ if __name__ == "__main__":
     base_casos = cbrkit.loaders.json("./datos/base_casos.json")
 
     paramSpace = {
-        "cweSim": [None, "wu_palmer"],
+        "cweSim": [
+            None,
+            "wu_palmer",
+            "path_steps",
+            "user_weightsOptimistic",
+            "user_weightsAverage",
+            "user_weightsPessimistic",
+            "node_levelsOptimistic",
+            "node_levelsAverage",
+            "node_levelsPessimistic",
+        ],
         "assignerSim": [None, "levenshtein", "jaro", "jaro_winkler"],
         "keywordsSim": [None, "jaccard"],
         "affectedProductsSim": [None, "jaccard", "isolated_mapping"],
