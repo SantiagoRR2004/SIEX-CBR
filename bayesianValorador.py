@@ -456,7 +456,7 @@ if __name__ == "__main__":
         cv=ps,
         n_iter=nIteration,
         random_state=0,
-        # n_jobs=-1,  # We use all the cores
+        n_jobs=-1,  # We use all the cores
     )
 
     with tqdm(total=nIteration) as pbar:
