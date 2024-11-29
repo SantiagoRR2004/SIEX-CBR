@@ -16,6 +16,7 @@ from cbrkit.typing import (
 )
 from cbrkit.sim import AttributeValueSim
 import itertools
+import os
 
 
 class ClassWithValue:
@@ -82,6 +83,9 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
         """
         Constructor of the BayesianValorador class
 
+        We don't want to use multicore because we already
+        use parallelization in the bayesian search
+
         Args:
             - base_de_casos: Dict[int, dict]
             - cweSim: str. The similarity function to use for the CWE
@@ -109,6 +113,7 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
             num_casos_similares=num_casos_similares,
             taxonomia=taxonomia,
             debug=debug,
+            multiCore=False,
         )
 
     def inicializar_retriever(
@@ -412,6 +417,8 @@ def checkValidParams(
 
 
 if __name__ == "__main__":
+    nCores = os.cpu_count()
+
     base_casos = cbrkit.loaders.json("./datos/base_casos.json")
 
     paramSpace = {
@@ -436,13 +443,13 @@ if __name__ == "__main__":
     model = BayesianValorador(base_de_casos=base_casos)
 
     # Calculate the maximum number of iterations
-    maxIter = np.prod([len(paramSpace[key]) for key in paramSpace.keys()])
+    maxCombs = np.prod([len(paramSpace[key]) for key in paramSpace.keys()])
 
-    nIteration = 32
+    nCombinations = 64
 
     # If the number of iterations is greater than the maximum number of iterations, we set it to the maximum number of iterations
-    if nIteration > maxIter:
-        nIteration = maxIter
+    if nCombinations > maxCombs:
+        nCombinations = maxCombs
 
     # Create a dummy dataset
     data = [1, 1]
@@ -454,15 +461,16 @@ if __name__ == "__main__":
         estimator=model,
         search_spaces=paramSpace,
         cv=ps,
-        n_iter=nIteration,
+        n_iter=nCombinations,
         random_state=0,
         n_jobs=-1,  # We use all the cores
+        n_points=nCores,  # We allow nCores points to be evaluated at the same time
     )
 
-    with tqdm(total=nIteration) as pbar:
+    with tqdm(total=nCombinations) as pbar:
 
         def updateProgress(*args):
-            pbar.update(1)
+            pbar.update(min(nCores, bayes_search.n_iter - pbar.n))
 
         bayes_search.fit(data, data, callback=[updateProgress])
 
