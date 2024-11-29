@@ -243,9 +243,21 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
         Function that initializes the Assigner attribute
 
         It allows:
+            - None
             - levenshtein
             - jaro
             - jaro_winkler
+            - ngram
+            - regex
+
+        We don't use glob because it would be the same
+        as using regex because there are no wildcards.
+
+        We also don't use table because we have no table
+        to use.
+
+        The three that use word vectors are not used
+        because they take too long to calculate.
 
         Args:
             - attributes: dict. The attributes dictionary
@@ -260,6 +272,10 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
                 assigner_similarity = cbrkit.sim.strings.jaro()
             elif self.assignerSim == "jaro_winkler":
                 assigner_similarity = cbrkit.sim.strings.jaro_winkler()
+            elif self.assignerSim == "ngram":
+                assigner_similarity = cbrkit.sim.strings.ngram(n=1)
+            elif self.assignerSim == "regex":
+                assigner_similarity = cbrkit.sim.strings.regex()
             else:
                 raise ValueError(
                     f"El valor de assignerSim={self.assignerSim} no es válido"
@@ -433,7 +449,7 @@ if __name__ == "__main__":
             "node_levelsAverage",
             "node_levelsPessimistic",
         ],
-        "assignerSim": [None, "levenshtein", "jaro", "jaro_winkler"],
+        "assignerSim": [None, "levenshtein", "jaro", "jaro_winkler", "ngram", "regex"],
         "keywordsSim": [None, "jaccard"],
         "affectedProductsSim": [None, "jaccard", "isolated_mapping"],
     }
