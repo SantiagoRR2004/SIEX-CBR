@@ -75,6 +75,10 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
         assignerSim: str = None,
         keywordsSim: str = None,
         affectedProductsSim: str = None,
+        cweWeight: float = 1.0,
+        assignerWeight: float = 1.0,
+        keywordsWeight: float = 1.0,
+        affectedProductsWeight: float = 1.0,
         umbralScore: int = 1,
         num_casos_similares: int = 100,
         taxonomia: str = "./datos/jerarquia_cwe_1000.yaml",
@@ -92,6 +96,10 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
             - assignerSim: str. The similarity function to use for the assigner
             - keywordsSim: str. The similarity function to use for the keywords
             - affectedProductsSim: str. The similarity function to use for the affectedProducts
+            - cweWeight: float The weight to use for the CWE
+            - assignerWeight: float  The weight to use for the assigner
+            - keywordsWeight: float  The weight to use for the keywords
+            - affectedProductsWeight: float  The weight to use for the affectedProducts
             - umbralScore: int
             - num_casos_similares: int
             - taxonomia: str
@@ -107,6 +115,10 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
         self.assignerSim = assignerSim
         self.keywordsSim = keywordsSim
         self.affectedProductsSim = affectedProductsSim
+        self.cweWeight = cweWeight
+        self.assignerWeight = assignerWeight
+        self.keywordsWeight = keywordsWeight
+        self.affectedProductsWeight = affectedProductsWeight
         super().__init__(
             base_de_casos=base_de_casos,
             umbralScore=umbralScore,
@@ -151,7 +163,15 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
             # Create the similarity function if they exist
             case_similarity = cbrkit.sim.attribute_value(
                 attributes=attributes,
-                aggregator=cbrkit.sim.aggregator(pooling="mean"),
+                aggregator=cbrkit.sim.aggregator(
+                    pooling="mean",
+                    pooling_weights={
+                        "cwe": self.cweWeight,
+                        "assigner": self.assignerWeight,
+                        "keywords": self.keywordsWeight,
+                        "affected_products": self.affectedProductsWeight,
+                    },
+                ),
             )
 
             # Crear un objeto de recuperación
@@ -452,9 +472,13 @@ if __name__ == "__main__":
         "assignerSim": [None, "levenshtein", "jaro", "jaro_winkler", "ngram", "regex"],
         "keywordsSim": [None, "jaccard"],
         "affectedProductsSim": [None, "jaccard", "isolated_mapping"],
+        "cweWeight": (0.1, 1.0),  # Buscará valores entre 0.1 y 1.0
+        "assignerWeight": (0.1, 1.0),
+        "keywordsWeight": (0.1, 1.0),
+        "affectedProductsWeight": (0.1, 1.0),
     }
 
-    checkValidParams(paramSpace, base_casos)
+    # checkValidParams(paramSpace, base_casos)
 
     model = BayesianValorador(base_de_casos=base_casos)
 

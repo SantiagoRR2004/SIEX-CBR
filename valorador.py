@@ -98,24 +98,16 @@ class Valorador(CBR):
             - cbrkit.retrieval.RetrieverFunc: Retriever function to retrieve similar cases
         """
         # Cargar modelo de spaCy
-        nlp = spacy.load("en_core_web_md")
+        nlp = spacy.load("en_core_web_sm")
 
         cwe_similarity = cbrkit.sim.strings.taxonomy.load(
-            taxonomia_cwe, cbrkit.sim.strings.taxonomy.wu_palmer()
+            taxonomia_cwe, cbrkit.sim.strings.taxonomy.path_steps()
         )
         assigner_similarity = cbrkit.sim.strings.levenshtein()
-        # keywords_similarity = cbrkit.sim.collections.jaccard()
-        """
+        keywords_similarity = cbrkit.sim.collections.jaccard()
         affected_products_similarity = cbrkit.sim.collections.isolated_mapping(
             cbrkit.sim.strings.jaro()
         )
-        """
-
-        def affected_products_similarity(x, y):
-            x = x[0].split("::")
-            y = y[0].split("::")
-            sim = cbrkit.sim.collections.isolated_mapping(cbrkit.sim.strings.jaro())
-            return sim(x, y)
 
         def description_similarity(x: str, y: str) -> float:
             """
