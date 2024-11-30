@@ -310,7 +310,22 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
         Function that initializes the Keywords attribute
 
         It allows:
+            - None
             - jaccard
+            - smith_waterman
+
+        We don't use dtw because we have strings and not
+        time series.
+
+        We can't use sequence_correctness because it needs two
+        sequences with the same elements and it checks the order.
+        We can't ensure that the lists of keywords have the same elements.
+
+        We can't use isolated_mapping, mapping or sequence_mapping
+        because they return the error:
+
+            float division by zero
+
 
         Args:
             - attributes: dict. The attributes dictionary
@@ -321,6 +336,8 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
         if self.keywordsSim is not None:
             if self.keywordsSim == "jaccard":
                 keywords_similarity = cbrkit.sim.collections.jaccard()
+            elif self.keywordsSim == "smith_waterman":
+                keywords_similarity = cbrkit.sim.collections.smith_waterman()
             else:
                 raise ValueError(
                     f"El valor de keywordsSim={self.keywordsSim} no es válido"
@@ -470,15 +487,21 @@ if __name__ == "__main__":
             "node_levelsPessimistic",
         ],
         "assignerSim": [None, "levenshtein", "jaro", "jaro_winkler", "ngram", "regex"],
-        "keywordsSim": [None, "jaccard"],
+        "keywordsSim": [None, "jaccard", "smith_waterman"],
         "affectedProductsSim": [None, "jaccard", "isolated_mapping"],
-        "cweWeight": (0.1, 1.0),  # Buscará valores entre 0.1 y 1.0
-        "assignerWeight": (0.1, 1.0),
-        "keywordsWeight": (0.1, 1.0),
-        "affectedProductsWeight": (0.1, 1.0),
     }
 
-    # checkValidParams(paramSpace, base_casos)
+    checkValidParams(paramSpace, base_casos)
+
+    # Now we know that the parameters are valid,
+    # we can run the BayesSearchCV to find the best hyperparameters
+    # with the weights
+
+    # We add the weights to the parameters
+    paramSpace["cweWeight"] = (0.1, 1.0)  # Buscará valores entre 0.1 y 1.0
+    paramSpace["assignerWeight"] = (0.1, 1.0)
+    paramSpace["keywordsWeight"] = (0.1, 1.0)
+    paramSpace["affectedProductsWeight"] = (0.1, 1.0)
 
     model = BayesianValorador(base_de_casos=base_casos)
 
