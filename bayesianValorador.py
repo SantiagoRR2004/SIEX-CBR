@@ -358,17 +358,14 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
             - isolated_mappingJaro
             - isolated_mappingJaro_winkler
             - isolated_mappingNgram
-            - isolated_mappingRegex
             - mappingLevenshtein
             - mappingJaro
             - mappingJaro_winkler
             - mappingNgram
-            - mappingRegex
             - sequence_mappingLevenshtein
             - sequence_mappingJaro
             - sequence_mappingJaro_winkler
             - sequence_mappingNgram
-            - sequence_mappingRegex
 
         We don't use dtw because we have strings and not
         time series.
@@ -377,6 +374,9 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
         sequences with the same elements and it checks the order.
         We can't ensure that the lists of keywords have the same elements.
 
+        regex sometimes returns an error so we don't use it.
+
+            re.error: nothing to repeat at position 15
 
         Args:
             - attributes: dict. The attributes dictionary
@@ -405,10 +405,6 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
                 affected_products_similarity = cbrkit.sim.collections.isolated_mapping(
                     cbrkit.sim.strings.ngram(n=1)
                 )
-            elif self.affectedProductsSim == "isolated_mappingRegex":
-                affected_products_similarity = cbrkit.sim.collections.isolated_mapping(
-                    cbrkit.sim.strings.regex()
-                )
             elif self.affectedProductsSim == "mappingLevenshtein":
                 affected_products_similarity = cbrkit.sim.collections.mapping(
                     cbrkit.sim.strings.levenshtein()
@@ -425,10 +421,6 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
                 affected_products_similarity = cbrkit.sim.collections.mapping(
                     cbrkit.sim.strings.ngram(n=1)
                 )
-            elif self.affectedProductsSim == "mappingRegex":
-                affected_products_similarity = cbrkit.sim.collections.mapping(
-                    cbrkit.sim.strings.regex()
-                )
             elif self.affectedProductsSim == "sequence_mappingLevenshtein":
                 affected_products_similarity = cbrkit.sim.collections.sequence_mapping(
                     cbrkit.sim.strings.levenshtein()
@@ -444,10 +436,6 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
             elif self.affectedProductsSim == "sequence_mappingNgram":
                 affected_products_similarity = cbrkit.sim.collections.sequence_mapping(
                     cbrkit.sim.strings.ngram(n=1)
-                )
-            elif self.affectedProductsSim == "sequence_mappingRegex":
-                affected_products_similarity = cbrkit.sim.collections.sequence_mapping(
-                    cbrkit.sim.strings.regex()
                 )
             else:
                 raise ValueError(
@@ -578,17 +566,14 @@ if __name__ == "__main__":
             "isolated_mappingJaro",
             "isolated_mappingJaro_winkler",
             "isolated_mappingNgram",
-            "isolated_mappingRegex",
             "mappingLevenshtein",
             "mappingJaro",
             "mappingJaro_winkler",
             "mappingNgram",
-            "mappingRegex",
             "sequence_mappingLevenshtein",
             "sequence_mappingJaro",
             "sequence_mappingJaro_winkler",
             "sequence_mappingNgram",
-            "sequence_mappingRegex",
         ],
     }
 
@@ -609,7 +594,7 @@ if __name__ == "__main__":
     # Calculate the maximum number of iterations
     maxCombs = np.prod([len(paramSpace[key]) for key in paramSpace.keys()])
 
-    nCombinations = 64
+    nCombinations = 256
 
     # If the number of iterations is greater than the maximum number of iterations, we set it to the maximum number of iterations
     if nCombinations > maxCombs:
