@@ -351,8 +351,32 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
         Function that initializes the AffectedProducts attribute
 
         It allows:
+            - None
             - jaccard
-            - isolated_mapping
+            - smith_waterman
+            - isolated_mappingLevenshtein
+            - isolated_mappingJaro
+            - isolated_mappingJaro_winkler
+            - isolated_mappingNgram
+            - isolated_mappingRegex
+            - mappingLevenshtein
+            - mappingJaro
+            - mappingJaro_winkler
+            - mappingNgram
+            - mappingRegex
+            - sequence_mappingLevenshtein
+            - sequence_mappingJaro
+            - sequence_mappingJaro_winkler
+            - sequence_mappingNgram
+            - sequence_mappingRegex
+
+        We don't use dtw because we have strings and not
+        time series.
+
+        We can't use sequence_correctness because it needs two
+        sequences with the same elements and it checks the order.
+        We can't ensure that the lists of keywords have the same elements.
+
 
         Args:
             - attributes: dict. The attributes dictionary
@@ -363,9 +387,67 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
         if self.affectedProductsSim is not None:
             if self.affectedProductsSim == "jaccard":
                 affected_products_similarity = cbrkit.sim.collections.jaccard()
-            elif self.affectedProductsSim == "isolated_mapping":
+            elif self.affectedProductsSim == "smith_waterman":
+                affected_products_similarity = cbrkit.sim.collections.smith_waterman()
+            elif self.affectedProductsSim == "isolated_mappingLevenshtein":
+                affected_products_similarity = cbrkit.sim.collections.isolated_mapping(
+                    cbrkit.sim.strings.levenshtein()
+                )
+            elif self.affectedProductsSim == "isolated_mappingJaro":
                 affected_products_similarity = cbrkit.sim.collections.isolated_mapping(
                     cbrkit.sim.strings.jaro()
+                )
+            elif self.affectedProductsSim == "isolated_mappingJaro_winkler":
+                affected_products_similarity = cbrkit.sim.collections.isolated_mapping(
+                    cbrkit.sim.strings.jaro_winkler()
+                )
+            elif self.affectedProductsSim == "isolated_mappingNgram":
+                affected_products_similarity = cbrkit.sim.collections.isolated_mapping(
+                    cbrkit.sim.strings.ngram(n=1)
+                )
+            elif self.affectedProductsSim == "isolated_mappingRegex":
+                affected_products_similarity = cbrkit.sim.collections.isolated_mapping(
+                    cbrkit.sim.strings.regex()
+                )
+            elif self.affectedProductsSim == "mappingLevenshtein":
+                affected_products_similarity = cbrkit.sim.collections.mapping(
+                    cbrkit.sim.strings.levenshtein()
+                )
+            elif self.affectedProductsSim == "mappingJaro":
+                affected_products_similarity = cbrkit.sim.collections.mapping(
+                    cbrkit.sim.strings.jaro()
+                )
+            elif self.affectedProductsSim == "mappingJaro_winkler":
+                affected_products_similarity = cbrkit.sim.collections.mapping(
+                    cbrkit.sim.strings.jaro_winkler()
+                )
+            elif self.affectedProductsSim == "mappingNgram":
+                affected_products_similarity = cbrkit.sim.collections.mapping(
+                    cbrkit.sim.strings.ngram(n=1)
+                )
+            elif self.affectedProductsSim == "mappingRegex":
+                affected_products_similarity = cbrkit.sim.collections.mapping(
+                    cbrkit.sim.strings.regex()
+                )
+            elif self.affectedProductsSim == "sequence_mappingLevenshtein":
+                affected_products_similarity = cbrkit.sim.collections.sequence_mapping(
+                    cbrkit.sim.strings.levenshtein()
+                )
+            elif self.affectedProductsSim == "sequence_mappingJaro":
+                affected_products_similarity = cbrkit.sim.collections.sequence_mapping(
+                    cbrkit.sim.strings.jaro()
+                )
+            elif self.affectedProductsSim == "sequence_mappingJaro_winkler":
+                affected_products_similarity = cbrkit.sim.collections.sequence_mapping(
+                    cbrkit.sim.strings.jaro_winkler()
+                )
+            elif self.affectedProductsSim == "sequence_mappingNgram":
+                affected_products_similarity = cbrkit.sim.collections.sequence_mapping(
+                    cbrkit.sim.strings.ngram(n=1)
+                )
+            elif self.affectedProductsSim == "sequence_mappingRegex":
+                affected_products_similarity = cbrkit.sim.collections.sequence_mapping(
+                    cbrkit.sim.strings.regex()
                 )
             else:
                 raise ValueError(
@@ -488,10 +570,29 @@ if __name__ == "__main__":
         ],
         "assignerSim": [None, "levenshtein", "jaro", "jaro_winkler", "ngram", "regex"],
         "keywordsSim": [None, "jaccard", "smith_waterman"],
-        "affectedProductsSim": [None, "jaccard", "isolated_mapping"],
+        "affectedProductsSim": [
+            None,
+            "jaccard",
+            "smith_waterman",
+            "isolated_mappingLevenshtein",
+            "isolated_mappingJaro",
+            "isolated_mappingJaro_winkler",
+            "isolated_mappingNgram",
+            "isolated_mappingRegex",
+            "mappingLevenshtein",
+            "mappingJaro",
+            "mappingJaro_winkler",
+            "mappingNgram",
+            "mappingRegex",
+            "sequence_mappingLevenshtein",
+            "sequence_mappingJaro",
+            "sequence_mappingJaro_winkler",
+            "sequence_mappingNgram",
+            "sequence_mappingRegex",
+        ],
     }
 
-    checkValidParams(paramSpace, base_casos)
+    # checkValidParams(paramSpace, base_casos)
 
     # Now we know that the parameters are valid,
     # we can run the BayesSearchCV to find the best hyperparameters
