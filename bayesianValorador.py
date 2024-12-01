@@ -159,7 +159,12 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
         attributes = self.inicializarAffectedProducts(attributes)
 
         # Check if attributes have been set
-        if attributes:
+        if attributes and (
+            self.cweWeight
+            or self.assignerWeight
+            or self.keywordsWeight
+            or self.affectedProductsWeight
+        ):
             # Create the similarity function if they exist
             case_similarity = cbrkit.sim.attribute_value(
                 attributes=attributes,
@@ -589,10 +594,10 @@ if __name__ == "__main__":
     """
 
     # We add the weights to the parameters
-    paramSpace["cweWeight"] = [0.1, 0.25, 0.5, 0.75, 1.0]
-    paramSpace["assignerWeight"] = [0.1, 0.25, 0.5, 0.75, 1.0]
-    paramSpace["keywordsWeight"] = [0.1, 0.25, 0.5, 0.75, 1.0]
-    paramSpace["affectedProductsWeight"] = [0.1, 0.25, 0.5, 0.75, 1.0]
+    paramSpace["cweWeight"] = [0, 0.25, 0.5, 0.75, 1.0]
+    paramSpace["assignerWeight"] = [0, 0.25, 0.5, 0.75, 1.0]
+    paramSpace["keywordsWeight"] = [0, 0.25, 0.5, 0.75, 1.0]
+    paramSpace["affectedProductsWeight"] = [0, 0.25, 0.5, 0.75, 1.0]
 
     model = BayesianValorador(base_de_casos=base_casos)
 
