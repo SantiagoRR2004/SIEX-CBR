@@ -589,10 +589,10 @@ if __name__ == "__main__":
     """
 
     # We add the weights to the parameters
-    paramSpace["cweWeight"] = [0, 0.25, 0.5, 0.75, 1.0]
-    paramSpace["assignerWeight"] = [0, 0.25, 0.5, 0.75, 1.0]
-    paramSpace["keywordsWeight"] = [0, 0.25, 0.5, 0.75, 1.0]
-    paramSpace["affectedProductsWeight"] = [0, 0.25, 0.5, 0.75, 1.0]
+    paramSpace["cweWeight"] = [0.1, 0.25, 0.5, 0.75, 1.0]
+    paramSpace["assignerWeight"] = [0.1, 0.25, 0.5, 0.75, 1.0]
+    paramSpace["keywordsWeight"] = [0.1, 0.25, 0.5, 0.75, 1.0]
+    paramSpace["affectedProductsWeight"] = [0.1, 0.25, 0.5, 0.75, 1.0]
 
     model = BayesianValorador(base_de_casos=base_casos)
 
