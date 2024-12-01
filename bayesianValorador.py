@@ -544,9 +544,13 @@ if __name__ == "__main__":
 
     base_casos = cbrkit.loaders.json("./datos/base_casos.json")
 
+    """
+    We don't have None in the parameters because
+    there is already 0.0 in the weights.
+    """
+
     paramSpace = {
         "cweSim": [
-            None,
             "wu_palmer",
             "path_steps",
             "user_weightsOptimistic",
@@ -556,10 +560,9 @@ if __name__ == "__main__":
             "node_levelsAverage",
             "node_levelsPessimistic",
         ],
-        "assignerSim": [None, "levenshtein", "jaro", "jaro_winkler", "ngram", "regex"],
-        "keywordsSim": [None, "jaccard", "smith_waterman"],
+        "assignerSim": ["levenshtein", "jaro", "jaro_winkler", "ngram", "regex"],
+        "keywordsSim": ["jaccard", "smith_waterman"],
         "affectedProductsSim": [
-            None,
             "jaccard",
             "smith_waterman",
             "isolated_mappingLevenshtein",
@@ -579,15 +582,17 @@ if __name__ == "__main__":
 
     # checkValidParams(paramSpace, base_casos)
 
-    # Now we know that the parameters are valid,
-    # we can run the BayesSearchCV to find the best hyperparameters
-    # with the weights
+    """    
+    Now we know that the parameters are valid,
+    we can run the BayesSearchCV to find the best hyperparameters
+    with the weights
+    """
 
     # We add the weights to the parameters
-    paramSpace["cweWeight"] = (0.1, 1.0)  # Buscará valores entre 0.1 y 1.0
-    paramSpace["assignerWeight"] = (0.1, 1.0)
-    paramSpace["keywordsWeight"] = (0.1, 1.0)
-    paramSpace["affectedProductsWeight"] = (0.1, 1.0)
+    paramSpace["cweWeight"] = [0, 0.25, 0.5, 0.75, 1.0]
+    paramSpace["assignerWeight"] = [0, 0.25, 0.5, 0.75, 1.0]
+    paramSpace["keywordsWeight"] = [0, 0.25, 0.5, 0.75, 1.0]
+    paramSpace["affectedProductsWeight"] = [0, 0.25, 0.5, 0.75, 1.0]
 
     model = BayesianValorador(base_de_casos=base_casos)
 
