@@ -5,46 +5,7 @@ import os
 import cbrkit
 from multiprocess import Pool
 import spacy
-
-
-def getTerminalSize() -> tuple:
-    """
-    Get the size of the terminal window in characters.
-
-    Args:
-        - None
-
-    Returns:
-        - tuple: (width, height) of the terminal window in characters
-    """
-    try:
-        terminalSize = os.get_terminal_size()
-        terminalWidth = terminalSize.columns
-        terminalHeight = terminalSize.lines
-    except OSError:
-        # Default dimensions if terminal size cannot be determined
-        terminalWidth = 80
-        terminalHeight = 24
-
-    return terminalWidth, terminalHeight
-
-
-def centerText(text: str, *, fillchar: str = "*", nFill: int = 2) -> str:
-    """
-    Center text in the terminal window. It adds the
-    number of fill characters specified by nFill to
-    the left and right of the text.
-
-    Args:
-        - text (str): Text to center
-        - fillchar (str): Character to use for filling
-        - nFill (int): Number of fill characters to use
-
-    Returns:
-        - str: Text centered in the terminal window
-    """
-    term = getTerminalSize()
-    return fillchar * nFill + text.center(term[0] - 2 * nFill) + fillchar * nFill + "\n"
+import visualization
 
 
 class Valorador(CBR):
@@ -478,29 +439,29 @@ class Valorador(CBR):
         Returns:
             - str: Pretty printed case
         """
-        term = getTerminalSize()
+        term = visualization.getTerminalSize()
         toret = "*" * term[0] + "\n"
         toret += " Vulnerability Report ".center(term[0], "*") + "\n"
-        toret += centerText("")
-        toret += centerText(caso["id"])
-        toret += centerText(caso["title"])
-        toret += centerText("")
-        toret += centerText(f"Assigned to: {caso['assigner']}")
-        toret += centerText("")
-        toret += centerText("Affected products:")
-        toret += centerText("")
+        toret += visualization.centerText("")
+        toret += visualization.centerText(caso["id"])
+        toret += visualization.centerText(caso["title"])
+        toret += visualization.centerText("")
+        toret += visualization.centerText(f"Assigned to: {caso['assigner']}")
+        toret += visualization.centerText("")
+        toret += visualization.centerText("Affected products:")
+        toret += visualization.centerText("")
         if len(caso["affected_products"]) > 1:
             toret += "".join(
                 [
-                    centerText(x)
+                    visualization.centerText(x)
                     for x in self.prettyprintAffected(caso["affected_products"]).split(
                         "\n"
                     )
                 ]
             )
         else:
-            toret += centerText(caso["affected_products"][0])
-        toret += centerText("")
+            toret += visualization.centerText(caso["affected_products"][0])
+        toret += visualization.centerText("")
 
         toret += "*" * term[0] + "\n" + "*" * term[0]
         return toret
