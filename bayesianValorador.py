@@ -200,9 +200,9 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
             - None
             - wu_palmer
             - path_steps
-            - user_weightsOptimistic
-            - user_weightsAverage
-            - user_weightsPessimistic
+            - auto_weightsOptimistic
+            - auto_weightsAverage
+            - auto_weightsPessimistic
             - node_levelsOptimistic
             - node_levelsAverage
             - node_levelsPessimistic
@@ -227,20 +227,20 @@ class BayesianValorador(valorador.Valorador, BaseEstimator):
                 cwe_similarity = cbrkit.sim.strings.taxonomy.load(
                     taxonomia_cwe, cbrkit.sim.strings.taxonomy.path_steps()
                 )
-            elif self.cweSim == "user_weightsOptimistic":
+            elif self.cweSim == "auto_weightsOptimistic":
                 cwe_similarity = cbrkit.sim.strings.taxonomy.load(
                     taxonomia_cwe,
-                    cbrkit.sim.strings.taxonomy.user_weights("optimistic"),
+                    cbrkit.sim.strings.taxonomy.auto_weights("optimistic"),
                 )
-            elif self.cweSim == "user_weightsAverage":
+            elif self.cweSim == "auto_weightsAverage":
                 cwe_similarity = cbrkit.sim.strings.taxonomy.load(
                     taxonomia_cwe,
-                    cbrkit.sim.strings.taxonomy.user_weights("average"),
+                    cbrkit.sim.strings.taxonomy.auto_weights("average"),
                 )
-            elif self.cweSim == "user_weightsPessimistic":
+            elif self.cweSim == "auto_weightsPessimistic":
                 cwe_similarity = cbrkit.sim.strings.taxonomy.load(
                     taxonomia_cwe,
-                    cbrkit.sim.strings.taxonomy.user_weights("pessimistic"),
+                    cbrkit.sim.strings.taxonomy.auto_weights("pessimistic"),
                 )
             elif self.cweSim == "node_levelsOptimistic":
                 cwe_similarity = cbrkit.sim.strings.taxonomy.load(
@@ -558,9 +558,9 @@ if __name__ == "__main__":
         "cweSim": [
             "wu_palmer",
             "path_steps",
-            "user_weightsOptimistic",
-            "user_weightsAverage",
-            "user_weightsPessimistic",
+            "auto_weightsOptimistic",
+            "auto_weightsAverage",
+            "auto_weightsPessimistic",
             "node_levelsOptimistic",
             "node_levelsAverage",
             "node_levelsPessimistic",
