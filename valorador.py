@@ -62,12 +62,15 @@ class Valorador(CBR):
         nlp = spacy.load("en_core_web_sm")
 
         cwe_similarity = cbrkit.sim.strings.taxonomy.load(
-            taxonomia_cwe, cbrkit.sim.strings.taxonomy.path_steps()
+            taxonomia_cwe, cbrkit.sim.strings.taxonomy.node_levels("pessimistic")
         )
-        assigner_similarity = cbrkit.sim.strings.levenshtein()
+
+        assigner_similarity = cbrkit.sim.strings.regex()
+
         keywords_similarity = cbrkit.sim.collections.jaccard()
+
         affected_products_similarity = cbrkit.sim.collections.isolated_mapping(
-            cbrkit.sim.strings.jaro()
+            cbrkit.sim.strings.ngram(1)
         )
 
         def description_similarity(x: str, y: str) -> float:
@@ -92,12 +95,19 @@ class Valorador(CBR):
                 "cwe": cwe_similarity,
                 "assigner": assigner_similarity,
                 "affected_products": affected_products_similarity,
-                # "keywords": keywords_similarity,
+                "keywords": keywords_similarity,
                 "description": description_similarity,
             },
             aggregator=cbrkit.sim.aggregator(
-                pooling="mean"
-            ),  # se pueden añadir pesos (pooling_weights)
+                pooling="mean",
+                pooling_weights={
+                    "cwe": 0.25,
+                    "assigner": 0.25,
+                    "affected_products": 0.5,
+                    "keywords": 0.75,
+                    "description": 1,
+                },
+            ),
         )
 
         # crear un objeto de recuperación
